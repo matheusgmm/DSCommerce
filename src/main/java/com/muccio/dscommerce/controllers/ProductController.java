@@ -3,7 +3,6 @@ package com.muccio.dscommerce.controllers;
 import com.muccio.dscommerce.dto.ProductDTO;
 import com.muccio.dscommerce.services.ProductService;
 import jakarta.validation.Valid;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
