@@ -1,16 +1,22 @@
 package com.muccio.dscommerce.services;
 
+import com.muccio.dscommerce.dto.UserDTO;
 import com.muccio.dscommerce.entities.Role;
 import com.muccio.dscommerce.entities.User;
 import com.muccio.dscommerce.projections.UserDetailsProjection;
 import com.muccio.dscommerce.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -22,7 +28,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         List<UserDetailsProjection> result = repository.searchUserAndRolesByEmail(username);
         if (result.isEmpty()) {
-            throw new UsernameNotFoundException("User not found.");
+            throw new UsernameNotFoundException("Email not found.");
         }
         User user = new User();
         user.setEmail(username);
@@ -31,5 +37,24 @@ public class UserService implements UserDetailsService {
             user.addRole(new Role(projection.getRoleId(), projection.getAuthority()));
         }
         return user;
+    }
+
+    protected User authenticated() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Jwt jwtPrincipal = (Jwt) authentication.getPrincipal();
+            String username = jwtPrincipal.getClaim("username");
+
+            return repository.findByEmail(username).orElseThrow(() -> new NoSuchElementException("User not found."));
+        }
+        catch (Exception e) {
+            throw new UsernameNotFoundException("Email not found.");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public UserDTO getMe() {
+        User user = authenticated();
+        return new UserDTO(user);
     }
 }
