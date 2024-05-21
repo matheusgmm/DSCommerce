@@ -3,6 +3,7 @@ package com.muccio.dscommerce.dto;
 import com.muccio.dscommerce.entities.Order;
 import com.muccio.dscommerce.entities.OrderItem;
 import com.muccio.dscommerce.entities.enums.OrderStatus;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class OrderDTO {
     private OrderStatus status;
     private ClientDTO client;
     private PaymentDTO payment;
+    @NotEmpty(message = "Deve ter ao menos um item.")
     private List<OrderItemDTO> items = new ArrayList<>();
 
     public OrderDTO(ClientDTO client, Long id, Instant moment, PaymentDTO payment, OrderStatus status) {
